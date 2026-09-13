@@ -6,8 +6,7 @@ from collections import defaultdict
 
 # Anthropic first-party list prices, USD per 1M tokens: (input, output).
 PRICING = {
-    "claude-opus-5": (5.00, 25.00),
-    "claude-opus-4-8": (5.00, 25.00),
+    "claude-haiku-4-5": (1.00, 5.00),
 }
 CACHE_READ_MULTIPLIER = 0.1
 CACHE_WRITE_MULTIPLIER = 1.25
@@ -29,7 +28,7 @@ def record(model, item_type, item_id, response_usage):
 
 
 def _cost(model, c):
-    price_in, price_out = PRICING.get(model, PRICING["claude-opus-5"])
+    price_in, price_out = PRICING.get(model, PRICING["claude-haiku-4-5"])
     return (c["input"] * price_in + c["output"] * price_out
             + c["cache_read"] * price_in * CACHE_READ_MULTIPLIER
             + c["cache_write"] * price_in * CACHE_WRITE_MULTIPLIER) / 1_000_000

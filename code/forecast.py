@@ -273,8 +273,10 @@ def apply_facts(flows, facts, rd, end):
             flows = [f for f in flows if not (f.amount > 0 and f.date >= (effective or rd))]
         elif kind == "income_unconfirmed":
             description = fact.get("income_description")
+            named = description and any(f.amount > 0 and f.projected and f.label == description for f in flows)
+            # A description that only names one member of pooled irregular income drops the whole pool.
             flows = [f for f in flows
-                     if not (f.amount > 0 and f.projected and (f.label == description if description else f.kind == "pool"))]
+                     if not (f.amount > 0 and f.projected and (f.label == description if named else f.kind == "pool"))]
         elif kind == "one_off_credit" and amount:
             upcoming_salary = sorted(f.date for f in salary_credits() if f.date >= rd)
             date = effective or (upcoming_salary[0] if upcoming_salary else rd)
