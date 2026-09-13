@@ -17,6 +17,7 @@ NON_STREAM_TYPES = frozenset({"refund", "investment_purchase", "investment_sale"
 @dataclass(frozen=True)
 class ForecastConfig:
     variable_estimator: str = "mean"   # amount for pooled variable spending
+    variable_buffer: float = 1.0       # safety multiplier on projected variable spending (groceries, transport, dining)
     fixed_estimator: str = "last"      # amount for monthly debits
     same_day: str = "debit_first"      # debit_first: bills before salary on the same day
     include_due_today: bool = True     # project occurrences due on request_date
@@ -203,7 +204,10 @@ def build_forecast(ds, request, config=ForecastConfig(), facts=()):
             gap = round(statistics.median((b - a).days for a, b in zip(dates, dates[1:])))
             if gap <= 0 or dates[-1] + dt.timedelta(days=gap * config.pool_stale_factor) < rd:
                 continue
-            value = estimate(values, config.variable_estimator if direction == "debit" else "min")
+            if direction == "debit":
+                value = estimate(values, config.variable_estimator) * config.variable_buffer
+            else:
+                value = estimate(values, "min")  # irregular income: the lowest past payout
             upcoming = (dates[-1] + dt.timedelta(days=gap * k) for k in range(1, HORIZON_DAYS // gap + 3))
         min_allowed = float(latest["minimum_allowed_amount"]) if latest["minimum_allowed_amount"] else None
         for nd in upcoming:

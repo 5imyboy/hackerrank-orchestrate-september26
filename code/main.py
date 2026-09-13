@@ -23,8 +23,11 @@ COLUMNS = [
 ]
 USAGE_REPORT = Path(__file__).resolve().parent / "evaluation" / "usage_report.md"
 
-# Chosen by sweeping configs against dataset/sample_requests.csv (code/evaluation/main.py --grid).
-CONFIG = ForecastConfig(variable_estimator="median", same_day="credit_first",
+# Balanced for caution: personal finances should not over-state what is safe to spend, so variable spending uses
+# the recent average, monthly bills their highest past amount, and bills due on payday land before the salary.
+# Chosen against dataset/sample_requests.csv (code/evaluation/main.py --grid), trading a few decision matches
+# for far fewer over-estimates of amount_safe_to_pay.
+CONFIG = ForecastConfig(variable_estimator="mean3", fixed_estimator="max", same_day="debit_first",
                         failed_debit_mode="suppress", project_irregular_income=True)
 
 
